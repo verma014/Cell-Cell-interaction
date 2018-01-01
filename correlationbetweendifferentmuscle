@@ -1,0 +1,96 @@
+library(ggplot2)
+library(GGally)
+library(pheatmap)
+muscleAll<-read.csv("ECandSCgenes.csv")
+muscleAll<-muscleAll[-c(13),]
+row.names(muscleAll)<-muscleAll$gene
+
+#Without FDB muscle
+#muscleAll<-muscleAll[,-c(1,4)]
+muscleAll<-muscleAll[,-c(1)]
+muscleselectedgenes<-muscleAll[c(2:3,6:7,13,14),]
+#FPKM<-read.csv("ECandSCgenes.csv")
+#row.names(FPKM)<-FPKM$gene
+#FPKM<-FPKM[-c(9),-c(1)]
+#Subset the muscle only genes
+
+#muscleFPKM<-FPKM[,-c(1:7)]
+#Select the matrix from which to make all the figures
+select<-NULL
+select<-muscleselectedgenes
+Cor<-cor(select)
+geneselect<-NULL
+geneselect<-as.data.frame(t(select))
+geneCor<-NULL
+geneCor<-cor(geneselect)
+#Look at the correlation between samples
+Cor<-cor(select,
+         method = "pearson")
+pheatmap(Cor,
+         display_numbers = TRUE,
+         cluster_rows = TRUE,
+         cluster_cols = TRUE)
+#Look at the correlation between genes
+
+geneselect<-as.data.frame(t(select))
+
+geneCor<-cor(geneselect[-c(4),],
+             method = "pearson")
+pheatmap(geneCor,
+         display_numbers = TRUE,
+#         cluster_rows = FALSE,
+#         cluster_cols = FALSE
+)
+
+qplot(((select$eye)),
+      ((select$diaphragm)),
+      data = select, 
+      method = "lm",
+      geom = c("point","smooth"))
+
+
+qplot(log((geneselect$Pecam1)),
+      log((geneselect$Pax7)),
+      data = geneselect, 
+      geom = c("point","smooth"), 
+      method = "lm",
+      se = TRUE,
+      alpha= I(1/2)
+      )
+
+ggpairs(geneselect, 
+        columns = c("eye", "diaphragm", "FDB"), 
+        upper = list(continuous = wrap("cor", 
+                                       size = 10)), 
+        lower = list(continuous = "smooth"))
+ggpairs(geneselect, 
+        columns = c("Pecam1", "Pax7", "Pdgfra"))
+
+library(corrplot)
+corrplot(Cor, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 90,addCoef.col = TRUE
+        )
+
+geneselect$muscle<-rownames(geneselect)
+#with FDB
+ggduo(log(geneselect),
+      types = list(continuous =c("smooth"),alpha= 0.5),
+     # mapping = ggplot2::aes(color = muscle),
+      columnsY = 2,
+      columnsX = c(1,3:6),
+      columnLabelsY = "EC-Pecam1",
+      columnLabelsX = c("EC-Cdh5","SC-Pax7","SC-Myf5","MØ-F4/80","FAP-Pdgfra"),
+      xlab = expression(Log[2](FPKM)),
+      ylab = expression(Log[2](FPKM)),
+)
+#without FDB
+ggduo(log2(geneselect),
+      types = list(continuous =c("smooth"),alpha= 0.5),
+      # mapping = ggplot2::aes(color = muscle),
+      columnsY = 2,
+      columnsX = c(1,3:6),
+      columnLabelsY = "EC-Pecam1",
+      columnLabelsX = c("EC-Cdh5","SC-Pax7","SC-Myf5","MØ-F4/80","FAP-Pdgfra"),
+      xlab = expression(Log[2](FPKM)),
+      ylab = expression(Log[2](FPKM)),
+)
