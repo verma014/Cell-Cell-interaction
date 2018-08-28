@@ -1,3 +1,6 @@
+#Expression between prototypic MuSC and endothelial cell genes shows high correlation between different muscle groups. 
+#Expression profile was obtained from muscleDB(http://muscledb.org/mouse/mRNA/). 
+
 library(ggplot2)
 library(GGally)
 library(pheatmap)
@@ -23,6 +26,7 @@ geneselect<-NULL
 geneselect<-as.data.frame(t(select))
 geneCor<-NULL
 geneCor<-cor(geneselect)
+geneselect$muscle<-rownames(geneselect)
 #Look at the correlation between samples
 Cor<-cor(select,
          method = "pearson")
@@ -41,6 +45,29 @@ pheatmap(geneCor,
 #         cluster_rows = FALSE,
 #         cluster_cols = FALSE
 )
+ggduo(log(geneselect),
+      types = list(continuous =c("smooth"),alpha= 0.5),
+      # mapping = ggplot2::aes(color = muscle),
+      columnsY = 2,
+      columnsX = c(1,3:6),
+      columnLabelsY = "EC-Pecam1",
+      columnLabelsX = c("EC-Cdh5","SC-Pax7","SC-Myf5","MØ-F4/80","FAP-Pdgfra"),
+      xlab = expression(Log[2](FPKM)),
+      ylab = expression(Log[2](FPKM)),
+)
+#Plot the correlation coefficient 
+#without FDB
+ggduo(log2(geneselect),
+      types = list(continuous =c("smooth"),alpha= 0.5),
+      # mapping = ggplot2::aes(color = muscle),
+      columnsY = 2,
+      columnsX = c(1,3:6),
+      columnLabelsY = "EC-Pecam1",
+      columnLabelsX = c("EC-Cdh5","SC-Pax7","SC-Myf5","MØ-F4/80","FAP-Pdgfra"),
+      xlab = expression(Log[2](FPKM)),
+      ylab = expression(Log[2](FPKM)),
+)
+
 
 qplot(((select$eye)),
       ((select$diaphragm)),
@@ -66,31 +93,10 @@ ggpairs(geneselect,
 ggpairs(geneselect, 
         columns = c("Pecam1", "Pax7", "Pdgfra"))
 
+#Correlation plot
+
 library(corrplot)
 corrplot(Cor, type = "upper", order = "hclust", 
          tl.col = "black", tl.srt = 90,addCoef.col = TRUE
         )
 
-geneselect$muscle<-rownames(geneselect)
-#with FDB
-ggduo(log(geneselect),
-      types = list(continuous =c("smooth"),alpha= 0.5),
-     # mapping = ggplot2::aes(color = muscle),
-      columnsY = 2,
-      columnsX = c(1,3:6),
-      columnLabelsY = "EC-Pecam1",
-      columnLabelsX = c("EC-Cdh5","SC-Pax7","SC-Myf5","MØ-F4/80","FAP-Pdgfra"),
-      xlab = expression(Log[2](FPKM)),
-      ylab = expression(Log[2](FPKM)),
-)
-#without FDB
-ggduo(log2(geneselect),
-      types = list(continuous =c("smooth"),alpha= 0.5),
-      # mapping = ggplot2::aes(color = muscle),
-      columnsY = 2,
-      columnsX = c(1,3:6),
-      columnLabelsY = "EC-Pecam1",
-      columnLabelsX = c("EC-Cdh5","SC-Pax7","SC-Myf5","MØ-F4/80","FAP-Pdgfra"),
-      xlab = expression(Log[2](FPKM)),
-      ylab = expression(Log[2](FPKM)),
-)
