@@ -1,0 +1,29 @@
+library(ggplot2)
+
+#Load the "All.pairs" tab from the excel sheet. Supplemental data 2 from xx.et.al
+LRpair<-read.csv("index/CuratedLR_Interaction.csv")
+#Find the number of interaction, unique ligands and unique receptor
+length(unique(LRpair$Pair.Name))
+length(unique(LRpair$Ligand.Name))
+length(unique(LRpair$Receptor.Name))
+#Change the gene name so that its the same as the thresholded ligands
+colnames(LRpair)[2]<-"Human.gene.name"
+#Chage the gene names to upper case so that they can be mearged
+#SC_ligand[,2]<-toupper(SC_ligand[,2])
+#Merge the known LR pair with the thresholded genes 
+SC_interacting_ligand<-merge(LRpair,SC_expressed,by="Human.gene.name")
+#Count the total number of unique interacting ligands 
+unique_SC_ligands_interacting<-(unique(SC_interacting_ligand$Human.gene.name))
+ggplot(SC_interacting_ligand)+geom_density(aes(log2(TPM)))
+#----
+#Subset the receptrs from the EC to this data
+#load the SC genes and subset for >10 TPM 
+EC_Fantom5<-(read.csv("ECFantom5.csv"))
+EC_Fantom5$Average<-as.numeric(as.character(EC_Fantom5$Average))
+colnames(EC_Fantom5)[1]<-"Human.gene.name"
+EC_LR<-merge(EC_Fantom5,LRpair,by="Human.gene.name",all = TRUE)
+EC_expressed<-subset(EC_Fantom5,EC_Fantom5$Average>10)
+colnames(EC_expressed)<-"Human.gene.name"
+ggplot(EC_expressed)+geom_density(aes((Average)))
+
+SC_Ligand_EC_Receptor<-merge(SC_interacting_ligand,EC_expressed,by="Human.gene.name")
